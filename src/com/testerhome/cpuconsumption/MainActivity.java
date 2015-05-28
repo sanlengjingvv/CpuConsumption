@@ -19,23 +19,27 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.TextView;
 
 public class MainActivity extends Activity {
+	private LinearLayout touchInterceptor;
 	private TextView dfmSuperConsumption;
 	private TextView dfmConsumption;
 	private Button begin;
 	private Button finish;
-    private RadioGroup radiogroup;
     private RadioButton radioChooseDFMSuper, radioChooseDFM;
     private EditText avid;
     private EditText timeElapse;
+    private EditText packageName;
 
 	private BatteryInfo info;
 	private long[][] timeInStateBefor;
@@ -62,9 +66,10 @@ public class MainActivity extends Activity {
     	info = new BatteryInfo(this);
     	avid = (EditText) findViewById(R.id.avid);
     	timeElapse = (EditText) findViewById(R.id.timeElapse);
-    	radiogroup = (RadioGroup) findViewById(R.id.radiogroup1);
+    	packageName = (EditText) findViewById(R.id.packageName);
     	radioChooseDFMSuper = (RadioButton) findViewById(R.id.chooseDFMSuper);
     	radioChooseDFM = (RadioButton) findViewById(R.id.chooseDFM); 
+		touchInterceptor = (LinearLayout)findViewById(R.id.rootLayout);
 
     	dfmSuperConsumption = (TextView) findViewById(R.id.DFMSuperConsumption);
     	dfmConsumption = (TextView) findViewById(R.id.DFMConsumption);
@@ -80,7 +85,7 @@ public class MainActivity extends Activity {
 				batteryCapacityBefor = info.getBatteryCapacity();
 			    Intent intent = new Intent(); 
 			  	PackageManager packageManager = getPackageManager(); 
-			  	intent = packageManager.getLaunchIntentForPackage("tv.danmaku.bili"); 
+			  	intent = packageManager.getLaunchIntentForPackage(packageName.getText().toString()); 
 //			  	intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED | Intent.FLAG_ACTIVITY_CLEAR_TOP) ; 
 			  	startActivity(intent);
 			  	if (radioChooseDFMSuper.isChecked()) {
@@ -126,16 +131,46 @@ public class MainActivity extends Activity {
 				
 			}
 		});
+		
+		touchInterceptor.setOnTouchListener(new OnTouchListener() {
 
-    }
+			@Override
+			public boolean onTouch(View view, MotionEvent event) {
+				   switch (event.getAction()) {
+				    case MotionEvent.ACTION_DOWN:
+		                InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE); 
+		                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+						touchInterceptor.requestFocus();
+				    case MotionEvent.ACTION_UP:
+						view.performClick();
+				    default:
+				        break;
+				    }
+				    return true;
+//				if (event.getAction() == MotionEvent.ACTION_DOWN) {
+//	                InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE); 
+//	                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+//					touchInterceptor.requestFocus();
+//				} else if (event.getAction() == MotionEvent.ACTION_UP) {
+//				}
+//				return false;
+			}
+		});
+	}
 	
+	@Override
+    protected void onResume() {
+		super.onResume();
+		touchInterceptor.requestFocus();
+	}
 
 	private boolean copyFile(String sourceFileName, String destFileName)
 	{
 	    AssetManager assetManager = getAssets();
 
 	    File destFile = new File(destFileName);
-
+	    if(destFile.exists())
+	    	destFile.delete();
 //	    File destParentDir = destFile.getParentFile();
 //	    destParentDir.mkdir();
 
