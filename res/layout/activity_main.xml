@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+    
+    <LinearLayout 
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        
+        <TextView
+	        android:id="@+id/av"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:textSize="16sp"
+	        android:text="av号：" />
+
+        <EditText
+            android:id="@+id/avid"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="2325614" />
+    </LinearLayout>
+    
+    <LinearLayout 
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        
+        <TextView
+	        android:id="@+id/time"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:textSize="16sp"
+	        android:text="测试时间：" />
+
+        <EditText
+            android:id="@+id/timeElapse"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="300" />
+        
+        <TextView
+	        android:id="@+id/second"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:textSize="16sp"
+	        android:text="秒" />
+    </LinearLayout>
+        
+    <LinearLayout 
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+    <RadioGroup
+    	android:id="@+id/radiogroup1"
+    	android:layout_width="wrap_content"
+    	android:layout_height="wrap_content"
+    	android:orientation="vertical" >
+    	
+    	<RadioButton
+    		android:id="@+id/chooseDFMSuper"
+    		android:layout_width="wrap_content"
+    		android:layout_height="wrap_content"
+    		android:text="超·烈焰弹幕使" />
+    	
+    	<RadioButton
+    		android:id="@+id/chooseDFM"
+    		android:layout_width="wrap_content"
+    		android:layout_height="wrap_content"
+    		android:text="烈焰弹幕使"	/>
+    </RadioGroup>
+    </LinearLayout>
+    
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/begin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/begin" />
+
+        <Button
+            android:id="@+id/finish"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/finish" />
+    </LinearLayout>
+   
+    <LinearLayout 
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        
+        <TextView
+	        android:id="@+id/DFMSuper"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:textSize="16sp"
+	        android:text="超·烈焰弹幕使：" />
+        
+        <TextView
+	        android:id="@+id/DFMSuperConsumption"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content" />
+        
+    </LinearLayout>
+    
+    <LinearLayout 
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        
+        <TextView
+	        android:id="@+id/DFM"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:textSize="16sp"
+	        android:text="烈焰弹幕使：" />
+        
+        <TextView
+	        android:id="@+id/DFMConsumption"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content" />
+        
+    </LinearLayout>
+	             
+</LinearLayout>
