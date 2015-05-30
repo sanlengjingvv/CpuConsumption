@@ -36,10 +36,10 @@ public class MainActivity extends Activity {
 	private TextView dfmConsumption;
 	private Button begin;
 	private Button finish;
-    private RadioButton radioChooseDFMSuper, radioChooseDFM;
-    private EditText avid;
-    private EditText timeElapse;
-    private EditText packageName;
+    private RadioButton radioChooseDFMSuper, radioChooseDFM; //弹幕绘制模式
+    private EditText avid; //av号
+    private EditText timeElapse; //测试时间
+    private EditText packageName; //包名
 
 	private BatteryInfo info;
 	private long[][] timeInStateBefor;
@@ -50,12 +50,14 @@ public class MainActivity extends Activity {
 	private String danmakuParameter;
 	private String avidParameter;
 	private String timeElapseParameter;
+	private String packageNameString;
 	
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
+        //将assets下的uiautomator包复制到/data/local/tmp/
 	    new Thread(new Runnable () {
 	    	@Override
 	    	public void run() {
@@ -77,40 +79,47 @@ public class MainActivity extends Activity {
 		begin.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
+			  	packageNameString = packageName.getText().toString();
+
 				avidParameter = " -e avid " + avid.getText().toString();
 				timeElapseParameter =  " -e timeElapse " + timeElapse.getText().toString();
 
 				timeInStateBefor = info.getTimeInState();
-				appCpuTimeBefor = info.getAppCpuTime();
+				appCpuTimeBefor = info.getAppCpuTime(packageNameString);
 				batteryCapacityBefor = info.getBatteryCapacity();
 			    Intent intent = new Intent(); 
 			  	PackageManager packageManager = getPackageManager(); 
-			  	intent = packageManager.getLaunchIntentForPackage(packageName.getText().toString()); 
-//			  	intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED | Intent.FLAG_ACTIVITY_CLEAR_TOP) ; 
+			  	intent = packageManager.getLaunchIntentForPackage(packageNameString); 
+			  	intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED | Intent.FLAG_ACTIVITY_CLEAR_TOP) ; 
 			  	startActivity(intent);
-			  	if (radioChooseDFMSuper.isChecked()) {
-			  		danmaku = "DFMSuper";
-			  		danmakuParameter = " -e danmaku " + "DFMSuper";
-			  	} else if (radioChooseDFM.isChecked()) {
-			  		danmaku = "DFM";
-			  		danmakuParameter = " -e danmaku " + "DFM";
+			  	Log.i("BatteryInfo", "packageNameString "+ packageNameString);
+			  	Log.i("BatteryInfo", "packageNameString == \"tv.danmaku.bili\" "+ (packageNameString == "tv.danmaku.bili"));
+			  	if (packageNameString.equals("tv.danmaku.bili")) {
+				  	if (radioChooseDFMSuper.isChecked()) {
+				  		danmaku = "DFMSuper"; //超烈焰弹幕使
+				  		danmakuParameter = " -e danmaku " + "DFMSuper";
+				  	} else if (radioChooseDFM.isChecked()) {
+				  		danmaku = "DFM"; //烈焰弹幕使
+				  		danmakuParameter = " -e danmaku " + "DFM";
+				  	}
+				  	
+				    new Thread(new Runnable () {
+				    	@Override
+				    	public void run() {
+				    		Process rt;
+							try {
+								rt = Runtime.getRuntime().exec("su");
+					    		DataOutputStream os = new DataOutputStream(rt.getOutputStream());
+					    		os.writeBytes("uiautomator runtest VideoPlayerTest.jar -c tv.danmaku.VideoPlayerTest " + danmakuParameter + avidParameter + timeElapseParameter + "\n");
+					    		os.flush();
+					    		os.writeBytes("exit\n");
+					    		Log.i("BatteryInfo", "uiautomator");
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+				    	}
+				    }).start();
 			  	}
-			    new Thread(new Runnable () {
-			    	@Override
-			    	public void run() {
-			    		Process rt;
-						try {
-							rt = Runtime.getRuntime().exec("su");
-				    		DataOutputStream os = new DataOutputStream(rt.getOutputStream());
-				    		os.writeBytes("uiautomator runtest VideoPlayerTest.jar -c tv.danmaku.VideoPlayerTest " + danmakuParameter + avidParameter + timeElapseParameter + "\n");
-				    		os.flush();
-				    		os.writeBytes("exit\n");
-				    		Log.i("BatteryInfo", "uiautomator");
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-			    	}
-			    }).start();
 			}
 		});
 		
@@ -119,7 +128,7 @@ public class MainActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				powerUsage = info.measurePowerUsage(timeInStateBefor, appCpuTimeBefor);
+				powerUsage = info.measurePowerUsage(packageNameString, timeInStateBefor, appCpuTimeBefor);
 				BigDecimal powerUsageBigDecimal = new BigDecimal(powerUsage);  
 				powerUsageBigDecimal = powerUsageBigDecimal.setScale(2, RoundingMode.HALF_UP);
 				String consumptionResult = "Cpu耗电" + powerUsageBigDecimal.toString() + "mAh" + " 整机耗电" + (batteryCapacityBefor - info.getBatteryCapacity()) + "mAh";
@@ -132,6 +141,7 @@ public class MainActivity extends Activity {
 			}
 		});
 		
+		//背景被点击时获得焦点
 		touchInterceptor.setOnTouchListener(new OnTouchListener() {
 
 			@Override
@@ -161,9 +171,10 @@ public class MainActivity extends Activity {
 	@Override
     protected void onResume() {
 		super.onResume();
-		touchInterceptor.requestFocus();
+		touchInterceptor.requestFocus(); //背景获得焦点
 	}
 
+	//从assets文件夹中复制文件
 	private boolean copyFile(String sourceFileName, String destFileName)
 	{
 	    AssetManager assetManager = getAssets();
