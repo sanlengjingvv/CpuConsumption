@@ -2,12 +2,16 @@ package com.testerhome.cpuconsumption;
 
 import com.testerhome.cpuconsumption.BatteryInfo;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashMap;
@@ -31,6 +35,8 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 
 public class MainActivity extends Activity {
+	private static final String TAG = "BatteryInfo";
+
 	private LinearLayout touchInterceptor;
 	private TextView dfmSuperConsumption;
 	private TextView dfmConsumption;
@@ -58,10 +64,12 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         
         //将assets下的uiautomator包复制到/data/local/tmp/
+        Log.i(TAG, "start copy VideoPlayerTest.jar");
 	    new Thread(new Runnable () {
 	    	@Override
 	    	public void run() {
-				copyFile("VideoPlayerTest.jar", "/data/local/tmp/VideoPlayerTest.jar");
+	    		copyFile("VideoPlayerTest.jar");
+//				copyFile("VideoPlayerTest.jar", "/data/local/tmp/VideoPlayerTest.jar");
 	    	}
 	    }).start();
 	    
@@ -93,7 +101,6 @@ public class MainActivity extends Activity {
 			  	intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED | Intent.FLAG_ACTIVITY_CLEAR_TOP) ; 
 			  	startActivity(intent);
 			  	Log.i("BatteryInfo", "packageNameString "+ packageNameString);
-			  	Log.i("BatteryInfo", "packageNameString == \"tv.danmaku.bili\" "+ (packageNameString == "tv.danmaku.bili"));
 			  	if (packageNameString.equals("tv.danmaku.bili")) {
 				  	if (radioChooseDFMSuper.isChecked()) {
 				  		danmaku = "DFMSuper"; //超烈焰弹幕使
@@ -106,11 +113,13 @@ public class MainActivity extends Activity {
 				    new Thread(new Runnable () {
 				    	@Override
 				    	public void run() {
+				    		String appDefaultPath = "/data/data/com.testerhome.cpuconsumption/files/";
 				    		Process rt;
 							try {
 								rt = Runtime.getRuntime().exec("su");
 					    		DataOutputStream os = new DataOutputStream(rt.getOutputStream());
-					    		os.writeBytes("uiautomator runtest VideoPlayerTest.jar -c tv.danmaku.VideoPlayerTest " + danmakuParameter + avidParameter + timeElapseParameter + "\n");
+					            Log.i(TAG, "uiautomator runtest " + appDefaultPath +"VideoPlayerTest.jar -c tv.danmaku.VideoPlayerTest " + danmakuParameter + avidParameter + timeElapseParameter);
+					    		os.writeBytes("uiautomator runtest " + appDefaultPath +"VideoPlayerTest.jar -c tv.danmaku.VideoPlayerTest " + danmakuParameter + avidParameter + timeElapseParameter + "\n");
 					    		os.flush();
 					    		os.writeBytes("exit\n");
 					    		Log.i("BatteryInfo", "uiautomator");
@@ -177,6 +186,9 @@ public class MainActivity extends Activity {
 	//从assets文件夹中复制文件
 	private boolean copyFile(String sourceFileName, String destFileName)
 	{
+        Log.i(TAG, "sourceFileName is " + sourceFileName);
+        Log.i(TAG, "destFileName is " + destFileName);
+
 	    AssetManager assetManager = getAssets();
 
 	    File destFile = new File(destFileName);
@@ -189,6 +201,7 @@ public class MainActivity extends Activity {
 	    OutputStream out = null;
 	    try
 	    {
+	        Log.i(TAG, "start read VideoPlayerTest.jar");
 	        in = assetManager.open(sourceFileName);
 	        out = new FileOutputStream(destFile);
 
@@ -198,11 +211,13 @@ public class MainActivity extends Activity {
 	        {
 	            out.write(buffer, 0, read);
 	        }
+	        Log.i(TAG, "after write VideoPlayerTest.jar");
 	        in.close();
 	        in = null;
 	        out.flush();
 	        out.close();
 	        out = null;
+	        Log.i(TAG, "Close copy");
 
 	        return true;
 	    }
@@ -213,5 +228,70 @@ public class MainActivity extends Activity {
 
 	    return false;
 	}
+	
+	public void copyFile(String sourceFileName) {
+        Log.i(TAG, "start copyFile");
+//		String data = "Data to save";
+	    AssetManager assetManager = getAssets();
+
+//	    File destParentDir = destFile.getParentFile();
+//	    destParentDir.mkdir();
+
+	    InputStream in = null;
+	    FileOutputStream out = null;
+        try {
+            out = openFileOutput("VideoPlayerTest.jar", Context.MODE_PRIVATE);;
+            in = assetManager.open(sourceFileName);
+
+            byte[] buffer = new byte[1024];
+            int read;
+            while ((read = in.read(buffer)) != -1)
+            {
+                out.write(buffer, 0, read);
+            }
+	        Log.i(TAG, "copy finish");
+        } catch (Exception e)
+	    {
+	        e.printStackTrace();
+	    } finally {
+			try {
+				if (out != null) {
+			        in.close();
+			        in = null;
+				}
+				if (out != null) {
+			        out.flush();
+			        out.close();
+			        out = null;
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
+
+		
+//		FileOutputStream out = null;
+//		BufferedWriter writer = null;
+//			try {
+//				out = openFileOutput("data", Context.MODE_PRIVATE);
+//				writer = new BufferedWriter(new OutputStreamWriter(out));
+//				writer.write(data);
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			} finally {
+//					try {
+//						if (writer != null) {
+//							writer.close();
+//						}
+//					} catch (IOException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+//				}
+	
 }
 

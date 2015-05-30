@@ -36,7 +36,7 @@ public class BatteryInfo {
 		Intent batteryStatus = mContext.registerReceiver(null, ifilter);
 		double status = (double) batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, 0) / 100;
 		double batteryCapacity = status * mPowerProfile.getBatteryCapacity();
-		Log.i(TAG, "bat" + status + batteryCapacity);
+//		Log.i(TAG, "Battery " + status + batteryCapacity);
 
 		return batteryCapacity;
 
@@ -76,9 +76,9 @@ public class BatteryInfo {
 		double ratio = (targetAppTimeAfter - targetAppTimeBefor) / (totalTimeAfter - totalTimeBefor);
 		Log.i(TAG, "ratio" + ratio);
 		double[] currentSteps = getCurrentSteps();
-//		Log.i(TAG, "timeInStateAfter.length" + timeInStateAfter.length);
-//		Log.i(TAG, "timeInStateBefor.length" + timeInStateBefor.length);
-//		Log.i(TAG, "currentSteps.length" + currentSteps.length);
+		Log.i(TAG, "timeInStateAfter.length " + timeInStateAfter.length);
+		Log.i(TAG, "timeInStateBefor.length " + timeInStateBefor.length);
+		Log.i(TAG, "currentSteps.length " + currentSteps.length);
 		//根据cpu在各个频率下的平均电流和消耗时间计算cpu总耗电
 		for (int i = 0; i < timeInStateAfter.length; i++) {
 			double power = (timeInStateAfter[i][1] - timeInStateBefor[i][1]) / 100 * currentSteps[timeInStateAfter.length - 1 - i]; //倒序是因为PowerFile和time_in_state排序相反
