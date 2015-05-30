@@ -33,6 +33,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
 	private static final String TAG = "BatteryInfo";
@@ -74,6 +75,8 @@ public class MainActivity extends Activity {
 	    }).start();
 	    
     	info = new BatteryInfo(this);
+    	if (info.getCurrentSteps().length != info.getTimeInState().length)
+    			Toast.makeText(this, "啊咧，时空坐标好像对不上的说。", Toast.LENGTH_LONG).show();
     	avid = (EditText) findViewById(R.id.avid);
     	timeElapse = (EditText) findViewById(R.id.timeElapse);
     	packageName = (EditText) findViewById(R.id.packageName);

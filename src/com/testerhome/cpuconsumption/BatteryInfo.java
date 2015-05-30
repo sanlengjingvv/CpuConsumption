@@ -89,7 +89,7 @@ public class BatteryInfo {
 	}
 	
 	//返回cpu在各个频率下的平均电流
-	private double[] getCurrentSteps() {
+	protected double[] getCurrentSteps() {
 		final int speedSteps = mPowerProfile.getNumSpeedSteps(); //cpu工作频率的数量
 		final double[] powerCpuNormal = new double[speedSteps];
 		for (int p = 0; p < speedSteps; p++) {
