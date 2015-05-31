@@ -68,7 +68,7 @@ public class BatteryInfo {
 		Log.i(TAG, "currentSteps.length " + currentSteps.length);
 		//根据cpu在各个频率下的平均电流和消耗时间计算cpu总耗电
 		for (int i = 0; i < timeInStateAfter.length; i++) {
-			double power = (timeInStateAfter[i][1] - timeInStateBefor[i][1]) / 100 * currentSteps[timeInStateAfter.length - 1 - i]; //倒序是因为PowerFile和time_in_state排序相反
+			double power = (timeInStateAfter[i][1] - timeInStateBefor[i][1]) / 100 * currentSteps[timeInStateAfter.length - 1 - i]; //倒序是因为PowerFile和time_in_state排序相反, timeInState单位是10毫秒，除100转成秒
 			totalPower += power;
 		}
 		
