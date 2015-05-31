@@ -34,34 +34,22 @@ public class BatteryInfo {
 	public double getBatteryCapacity() {
 		IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
 		Intent batteryStatus = mContext.registerReceiver(null, ifilter);
-		double status = (double) batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, 0) / 100;
+		double status = (double) batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, 0) / 100; //转换成百分比
 		double batteryCapacity = status * mPowerProfile.getBatteryCapacity();
-//		Log.i(TAG, "Battery " + status + batteryCapacity);
+		
+		Log.i(TAG, "getBatteryCapacity " + status + "% " + batteryCapacity);
 
 		return batteryCapacity;
-
 	}
 	
 	//计算app通过cpu消耗的电量
 	public double measurePowerUsage(String packageNameString, long[][] timeInStateBefor, HashMap<String, Long> appCpuTimeBefor) {
 		HashMap<String, Long> appCpuTimeAfter = new HashMap<String, Long>(); //从开机到结束测试时，targetAppTime是目标app消耗的cpu时间，totalTime是所有app消耗的cpu时间
-
-//		Log.i(TAG, "timeInStateBefor" + timeInStateBefor[0][0]);
-//		Log.i(TAG, "timeInStateBefor" + timeInStateBefor[0][1]);
-//		Log.i(TAG, "appCpuTimeBefor" + appCpuTimeBefor.get("targetAppTime") + "  " + appCpuTimeBefor.get("totalTime"));
-		
 		appCpuTimeAfter = getAppCpuTime(packageNameString);
-//		Log.i(TAG, "appCpuTimeBefor" + appCpuTimeBefor.get("targetAppTime") + "  " + appCpuTimeBefor.get("totalTime"));
-
-//		Log.i(TAG, "timeInStateBefor" + timeInStateBefor[0][0]);
-//		Log.i(TAG, "timeInStateBefor" + timeInStateBefor[0][1]);
+		
 		long[][] timeInStateAfter; ////从开机到结束测试时cpu在各个频率下消耗的时间
 		timeInStateAfter = getTimeInState();
-		
-//		Log.i(TAG, "appCpuTimeAfter" + appCpuTimeAfter.get("targetAppTime") + "  " + appCpuTimeAfter.get("totalTime"));
-//		Log.i(TAG, "timeInStateAfter" + timeInStateAfter[0][0]);
-//		Log.i(TAG, "timeInStateAfter" + timeInStateAfter[0][1]);
-		
+
 		double totalPower = 0;		
 		double targetAppTimeAfter = appCpuTimeAfter.get("targetAppTime");
 		double targetAppTimeBefor = appCpuTimeBefor.get("targetAppTime");
@@ -76,15 +64,14 @@ public class BatteryInfo {
 		double ratio = (targetAppTimeAfter - targetAppTimeBefor) / (totalTimeAfter - totalTimeBefor);
 		Log.i(TAG, "ratio" + ratio);
 		double[] currentSteps = getCurrentSteps();
-		Log.i(TAG, "timeInStateAfter.length " + timeInStateAfter.length);
 		Log.i(TAG, "timeInStateBefor.length " + timeInStateBefor.length);
 		Log.i(TAG, "currentSteps.length " + currentSteps.length);
 		//根据cpu在各个频率下的平均电流和消耗时间计算cpu总耗电
 		for (int i = 0; i < timeInStateAfter.length; i++) {
 			double power = (timeInStateAfter[i][1] - timeInStateBefor[i][1]) / 100 * currentSteps[timeInStateAfter.length - 1 - i]; //倒序是因为PowerFile和time_in_state排序相反
 			totalPower += power;
-//			Log.i(TAG, "totalPower" + totalPower + " Feq" + timeInStateAfter[i][0] + "getCurrentSteps" + currentSteps[timeInStateAfter.length - 1 - i]);
 		}
+		
 		return totalPower * ratio / 3600; //从秒转到小时
 	}
 	
@@ -95,20 +82,13 @@ public class BatteryInfo {
 		for (int p = 0; p < speedSteps; p++) {
 			powerCpuNormal[p] = mPowerProfile.getAveragePower(PowerProfile.POWER_CPU_ACTIVE, p);
 		}
-//		final int speedSteps = 5;
-//		final double[] powerCpuNormal = new double[speedSteps];
-//		for (int p = 0; p < speedSteps; p++) {
-//			double ab = 20;
-//			powerCpuNormal[p] = (double) ((double) 100 + (ab * p));
-////			Log.i(TAG, "powerCpuNormal" + p + " " + powerCpuNormal[p]);
-//		}
+
 		return powerCpuNormal;
 	}
 	
 	//返回目标app和所有app消耗的cpu时间
 	public HashMap<String, Long> getAppCpuTime(String packageName) {
 		HashMap<String, Long> appCpuTime = new HashMap<String, Long>();
-
 		long totalTime = 0;
 		long targetProcessTime = 0;
 
@@ -116,18 +96,14 @@ public class BatteryInfo {
 		List<RunningAppProcessInfo> runningApps = am.getRunningAppProcesses();
 		for (RunningAppProcessInfo info : runningApps) {
 			long time = getAppProcessTime(info.pid);
-//			Log.i(TAG, "time" + time);
             totalTime += time;
-//			Log.i(TAG, "totalTime" + totalTime);
             if (info.processName.contains(packageName)) {
             	targetProcessTime += time; //一个app可能有多个进程
             }
 		}
-//		Log.i(TAG, "ftotalTime" + totalTime);
 
 		appCpuTime.put("totalTime", totalTime);
 		appCpuTime.put("targetAppTime", targetProcessTime);
-//		Log.i(TAG, "appCpuTime" + appCpuTime.toString());
 
 		return appCpuTime;
 	}
@@ -174,8 +150,6 @@ public class BatteryInfo {
 		long cutime = string2Long(s[15]);
 		long cstime = string2Long(s[16]);
 		
-//		Log.i(TAG, "processTime" + (utime + stime + cutime + cstime));
-
 		return utime + stime + cutime + cstime;
 	}
 	
@@ -191,23 +165,18 @@ public class BatteryInfo {
 
 	//获取从开机到执行时cpu在各个频率下运行的时间
 	public long[][] getTimeInState() {
-		excutor("cat /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state");
-	      StringBuffer output = new StringBuffer();
-	      output = excutor("cat /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state");
-
-	      String[] str = output.toString().split("\n");
-//    	  Log.i(TAG, "str.length" + str.length);
-	      
-	  	  long[][] timeInState;
-	      timeInState = new long[str.length][2];
-	      for (int i = 0; i < str.length; i++) {
+	    StringBuffer output = new StringBuffer();
+	    output = excutor("cat /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state");
+        String[] str = output.toString().split("\n");
+        
+	    long[][] timeInState;
+	    timeInState = new long[str.length][2];
+	    for (int i = 0; i < str.length; i++) {
 	    	  timeInState[i][0]= string2Long(str[i].split(" ")[0]); //Ƶ��
 	    	  timeInState[i][1] = string2Long(str[i].split(" ")[1]); //ʱ��
-//	    	  Log.i(TAG, timeInState[i][0] + " " + timeInState[i][1]);
-
 	      }	      
-	      return timeInState;
 	      
+	      return timeInState;
 	    }
 	
 	public StringBuffer excutor(String cmd) {
@@ -227,6 +196,7 @@ public class BatteryInfo {
 	      } catch (Exception e) {
 	        e.printStackTrace();
 	      }
+	      
 	      return output;
 	}
 	
